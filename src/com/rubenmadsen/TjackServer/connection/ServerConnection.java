@@ -6,11 +6,13 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.Hashtable;
 import java.util.List;
 
 public class ServerConnection extends Thread{
-    List<ClientConnection> clients = new ArrayList<>();
-    public Observable<ClientConnection> createSocketObservable(int port) {
+    List<Socket> clients = new ArrayList<>();
+    public Observable<Socket> createSocketObservable(int port) {
         return Observable.create(emitter -> {
             try (ServerSocket serverSocket = new ServerSocket(port)) {
                 while (!emitter.isDisposed() && !serverSocket.isClosed()) {
@@ -19,10 +21,7 @@ public class ServerConnection extends Thread{
                     Socket socket = serverSocket.accept();
                     System.out.println("Client trying to connect");
                     // Emit the socket to subscribers.
-                    ClientConnection clientConnection = new ClientConnection();
-                    clientConnection.setSocket(socket);
-                    this.clients.add(clientConnection);
-                    emitter.onNext(clientConnection);
+                    emitter.onNext(socket);
                 }
             } catch (IOException e) {
                 emitter.onError(e);
@@ -30,12 +29,12 @@ public class ServerConnection extends Thread{
         });
     }
 
-    public void removeClient(ClientConnection clientConnection){
-        this.clients.remove(clientConnection);
+    public void removeClient(Socket client){
+        this.clients.remove(client);
         System.out.println("Client connection removed");
     }
 
-    public void distribute(ClientConnection sender, String packet, boolean includeSender) throws IOException {
+    /*public void distribute(ClientConnection sender, String packet, boolean includeSender) throws IOException {
         this.clients.stream().filter(clientConnection -> clientConnection != sender).forEach(clientConnection -> {
             try {
                 clientConnection.send(packet);
@@ -51,5 +50,5 @@ public class ServerConnection extends Thread{
                     e.printStackTrace();
                 }
             });
-    }
+    }*/
 }

@@ -1,5 +1,6 @@
 package com.rubenmadsen.TjackServer;
 
+import java.util.Scanner;
 
 /**
 * <h1>AppStart</h1>
@@ -12,21 +13,13 @@ public class AppStart {
 
 	public static void main(String[] args) throws InterruptedException {
 		final int port = 4231;
-		/*List<String> flags = Arrays.asList(args);
-		if (flags.size() > 1)
-			port = Integer.parseInt(flags.get(1));*/
-
-		Thread thread = new Thread(() -> {
-			ChessServer chessServer = new ChessServer(port);
-			while (true);
-		});
-		thread.start();
-
-		// Make sure GUI is created on the event dispatching thread
-		/*SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-
-			}
-		});*/
+		ChessServer chessServer = new ChessServer(port);
+		Scanner scanner = new Scanner(System.in);
+		String read = "";
+		while (!read.equals("exit")){
+			read = scanner.nextLine();
+			System.out.println("Ping -> " + read);
+			chessServer.printGame(read);
+		}
 	}
 }

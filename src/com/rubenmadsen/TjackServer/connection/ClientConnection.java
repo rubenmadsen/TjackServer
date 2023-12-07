@@ -6,11 +6,10 @@ import java.io.*;
 import java.net.Socket;
 
 public class ClientConnection {
-    Socket socket;
+    /*Socket socket;
     OutputStream os;
     InputStream is;
-    ObjectInputStream ois;
-    ObjectOutputStream oos;
+    BufferedInputStream bis;
     public Socket getSocket(){
         return this.socket;
     }
@@ -30,18 +29,24 @@ public class ClientConnection {
     }
 
     private void setupSocket() throws IOException {
-        this.oos = new ObjectOutputStream(this.socket.getOutputStream());
-        this.ois = new ObjectInputStream(this.socket.getInputStream());
-    }
+        this.os = this.socket.getOutputStream();
+        this.is = this.socket.getInputStream();
+        this.bis = new BufferedInputStream(this.is);
+    }*/
 
-    public Observable<String> receive() {
+    static public Observable<String> receive(Socket client) throws IOException {
+        OutputStream os = client.getOutputStream();
+        InputStream is = client.getInputStream();
         return Observable.create(emitter -> {
+            BufferedInputStream bis = new BufferedInputStream(is);
                 System.out.println("Connected to server");
-                while (!emitter.isDisposed() && !socket.isClosed()) {
-                    // Accept new client connections.
-                    String packet;
-                    while((packet = (String)this.ois.readObject()) != null){
-                        emitter.onNext(packet);
+                while (!emitter.isDisposed() && !client.isClosed()) {
+                    byte[] buffer = new byte[1024];
+                    int bytesRead;
+                    while ((bytesRead = bis.read(buffer)) != -1) {
+                        // Process the bytes
+                        String str = new String(buffer, 0, bytesRead);
+                        emitter.onNext(str);
                     }
                 }
             emitter.onError(new Throwable("Socket knas"));
@@ -49,6 +54,6 @@ public class ClientConnection {
     }
 
     public void send(String packet) throws IOException {
-        this.oos.writeObject(packet);
+        //this.os.writeObject(packet);
     }
 }
