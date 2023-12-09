@@ -35,26 +35,24 @@ public class ChessServer extends Thread{
         serverObservable.subscribeOn(Schedulers.io())
             // Subscribe to greeting
             .subscribe(client -> {
-                System.out.println("Client connected from: " + client.getInetAddress() + " on port: " + client.getPort());
-                //client.send("Welcome message");
-                // Start listening to socket
-                AtomicReference<String> identifier = new AtomicReference<>();
-                System.out.println("Start receiving from socket");
-                Disposable disposable = ClientConnection.receive(client).take(1).subscribe(data -> {
-                    System.out.println("Receive greeting: " + data);
-                    if(!this.games.containsKey(data))
+                //System.out.println("Client connected from: " + client.getInetAddress() + " on port: " + client.getPort());
+                //System.out.println("Start receiving from socket");
+                Observable<String> ClientConnectionObservable = ClientConnection.receive(client);
+                Disposable disposable = ClientConnectionObservable.firstElement().subscribeOn(Schedulers.io()).subscribe(data -> {
+                    //System.out.println("Receive greeting: " + data);
+                    if(!this.games.containsKey(data)){
                         this.games.put(data,new GamePair(data));
-                    identifier.set(data);
-
+                        System.out.println("Created game:" + data);
+                    }
+                    GamePair gamePair = this.games.get(data);
+                    gamePair.addPlayer(client);
                 }, throwable -> {
                     System.out.println("Client socket disconnected");
                     serverConnection.removeClient(client);
                 },() ->{
                     System.out.println("Client on Complete");
                 });
-                disposable.dispose();
-                GamePair gamePair = games.get(identifier.get());
-                gamePair.addPlayer(client);
+                //disposable.dispose();
 
             },throwable -> {
                 System.out.println("Client connection problem");

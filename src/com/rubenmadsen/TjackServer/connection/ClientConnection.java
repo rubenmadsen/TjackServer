@@ -4,6 +4,8 @@ import io.reactivex.rxjava3.core.Observable;
 
 import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 public class ClientConnection {
     /*Socket socket;
@@ -53,7 +55,9 @@ public class ClientConnection {
         });
     }
 
-    public void send(String packet) throws IOException {
-        //this.os.writeObject(packet);
+    static public void send(Socket client,String packet) throws IOException {
+        byte[] bytes = packet.getBytes(StandardCharsets.UTF_8);
+        System.out.println("bytes: [" + Arrays.toString(bytes) + "]");
+        client.getOutputStream().write(bytes);
     }
 }
