@@ -2,6 +2,9 @@ package com.rubenmadsen.TjackServer.utility;
 
 import com.google.gson.*;
 import com.rubenmadsen.TjackServer.Packet.HostPacket;
+import com.rubenmadsen.TjackServer.Packet.JoinPacket;
+import com.rubenmadsen.TjackServer.Packet.JoinedPacket;
+import com.rubenmadsen.TjackServer.Packet.MovePacket;
 
 import java.lang.reflect.Type;
 
@@ -20,7 +23,10 @@ public class CustomDeserializer implements JsonDeserializer<Object> {
                     System.out.println("Found HostPacket");
                 }
                 case "JoinPacket" -> {
-
+                    cls = JoinPacket.class;
+                }
+                case "MovePacket" -> {
+                    cls = MovePacket.class;
                 }
 
             }
