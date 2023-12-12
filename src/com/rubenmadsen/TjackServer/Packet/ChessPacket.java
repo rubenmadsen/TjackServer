@@ -1,7 +1,11 @@
 package com.rubenmadsen.TjackServer.Packet;
 
-public class ChessPacket {
-    protected String identifier;
-    protected int len;
-    protected char[] data;
+import com.google.gson.Gson;
+
+public class ChessPacket extends AChessPacket{
+
+    static public ChessPacket decodeJson(String jsonString){
+        Gson gson = new Gson();
+        return gson.fromJson(jsonString, HostPacket.class);
+    }
 }

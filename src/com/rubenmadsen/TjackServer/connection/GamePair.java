@@ -1,7 +1,8 @@
 package com.rubenmadsen.TjackServer.connection;
 
-import com.rubenmadsen.TjackServer.Packet.ChessPacket;
-import io.reactivex.rxjava3.core.Scheduler;
+import com.rubenmadsen.TjackServer.Packet.AChessPacket;
+import com.rubenmadsen.TjackServer.Packet.InfoPacket;
+import com.rubenmadsen.TjackServer.Packet.JoinedPacket;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 import java.io.IOException;
@@ -12,38 +13,37 @@ import java.util.List;
 
 public class GamePair {
     private List<Socket> players = new ArrayList<>();
-    private String identifier;
+    private final String identifier;
     public GamePair(String identifier){
         this.identifier = identifier;
     }
 
+    public void rejoin(Socket player){
+
+    }
     public void addPlayer(Socket socket) throws IOException {
         this.players.add(socket);
-        ClientConnection.receive(socket).subscribeOn(Schedulers.io()).subscribe(data -> {
-            ChessPacket packet = new ChessPacket();
+        ClientConnection.receive(socket, AChessPacket.class).subscribeOn(Schedulers.io()).subscribe(data -> {
             //this.distributeTo(socket, data);
         },throwable -> {
-
+            System.out.println("Client fucked off");
         }, () ->{
-
+            System.out.println("Client on complete");
         });
-        ClientConnection.send(socket,"Welcome");
         System.out.println("Player " + this.players.size() + " connected");
         if(this.players.size() == 2){
             for (Socket player : this.players){
-                ClientConnection.send(socket,"Starting");
+                //ClientConnection.send(socket,new InfoPacket("Starting"));
             }
         }
     }
-    public void distributeTo(Socket sender, String data){
+    public <T extends AChessPacket> void distributeTo(Socket sender, T packet){
         this.players.stream().filter(socket -> socket != sender).forEach(socket -> {
             try {
-                OutputStream os = socket.getOutputStream();
-                os.write(data.getBytes());
+                ClientConnection.send(socket, packet);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-
         });
     }
     @Override
