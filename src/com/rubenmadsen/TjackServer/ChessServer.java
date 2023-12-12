@@ -30,11 +30,7 @@ public class ChessServer extends Thread{
     public synchronized void endGame(String identifier){
         this.games.remove(identifier);
     }
-    public void joinGame(String identifier, Socket player) throws IOException {
-        if (!this.games.containsKey(identifier))
-            this.startGame(identifier);
-        this.games.get(identifier).addPlayer(player);
-    }
+
     public void printGame(String identifier){
         if (this.games.containsKey(identifier)){
             GamePair gamePair = this.games.get(identifier);
@@ -61,31 +57,39 @@ public class ChessServer extends Thread{
                         String id = Generate.generateId(8);
                         GamePair gamePair = new GamePair(id);
                         this.games.put(id, gamePair);
-                        gamePair.addPlayer(client);
+                        gamePair.addPlayer(client,hostPacket.playerName);
                         JoinedPacket response = new JoinedPacket(hostPacket.playerName);
                         response.id = "dolk";//id;
-                        gamePair.distributeTo(null,response);
+                        ClientConnection.send(client, response);
+                        //gamePair.distributeTo(null,response);
                         System.out.println("This guy connected:" + hostPacket.playerName);
                     }
                     else if (packet instanceof JoinPacket joinPacket){
                         GamePair gamePair = this.games.get("dolk");
-                        gamePair.addPlayer(client);
-                        JoinedPacket response = new JoinedPacket(joinPacket.playerName);
-                        gamePair.distributeTo(client,response);
-                        System.out.println("This second guy:" + joinPacket.playerName + " connected to:" + joinPacket.identifier);
+                        if (!gamePair.isFull()){
+                            gamePair.addPlayer(client, joinPacket.playerName);
+                            JoinedPacket response = new JoinedPacket(joinPacket.playerName);
+                            //gamePair.distributeTo(client,response);
+                            ClientConnection.send(client, response);
+                            System.out.println("This second guy:" + joinPacket.playerName + " connected to:" + joinPacket.identifier);
+                        }
                     }
-                    // Client data errors
+
                 }, throwable -> {
+                    // Incoming data error
                     System.out.println("Client socket disconnected");
                     serverConnection.removeClient(client);
                 },() ->{
+                    // Incoming data complete
                     System.out.println("Client on Complete");
                 });
 
-                // Server connection errors
+
             },throwable -> {
+                // Client listener error
                 System.out.println("Client connection problem");
             }, () -> {
+                // Client listener complete
                 System.out.println("Server on Complete");
             });
     }

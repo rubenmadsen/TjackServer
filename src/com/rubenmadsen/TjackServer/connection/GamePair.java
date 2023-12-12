@@ -3,6 +3,7 @@ package com.rubenmadsen.TjackServer.connection;
 import com.rubenmadsen.TjackServer.Packet.AChessPacket;
 import com.rubenmadsen.TjackServer.Packet.InfoPacket;
 import com.rubenmadsen.TjackServer.Packet.JoinedPacket;
+import com.rubenmadsen.TjackServer.Packet.StartPacket;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 import java.io.IOException;
@@ -13,6 +14,7 @@ import java.util.List;
 
 public class GamePair {
     private List<Socket> players = new ArrayList<>();
+    private List<String> playerNames = new ArrayList<>();
     private final String identifier;
     public GamePair(String identifier){
         this.identifier = identifier;
@@ -21,8 +23,12 @@ public class GamePair {
     public void rejoin(Socket player){
 
     }
-    public void addPlayer(Socket socket) throws IOException {
+    public boolean isFull(){
+        return this.players.size() == 2;
+    }
+    public void addPlayer(Socket socket, String name) throws IOException {
         this.players.add(socket);
+        this.playerNames.add(name);
         ClientConnection.receive(socket, AChessPacket.class).subscribeOn(Schedulers.io()).subscribe(data -> {
             //this.distributeTo(socket, data);
         },throwable -> {
@@ -33,9 +39,9 @@ public class GamePair {
         });
         System.out.println("Player " + this.players.size() + " connected");
         if(this.players.size() == 2){
-            for (Socket player : this.players){
-                //ClientConnection.send(socket,new InfoPacket("Starting"));
-            }
+            StartPacket startPacket = new StartPacket(this.playerNames.get(0),this.playerNames.get(1));
+            startPacket.id = this.identifier;
+            this.distributeTo(null,startPacket);
         }
     }
     public <T extends AChessPacket> void distributeTo(Socket sender, T packet){
