@@ -18,8 +18,11 @@ public class AppStart {
 		String read = "";
 		while (!read.equals("exit")){
 			read = scanner.nextLine();
-			System.out.println("Ping -> " + read);
-			chessServer.printGame(read);
+			if (read.startsWith("tell ")){
+				//chessServer.printGame(read);
+				chessServer.tellAll(read.substring(5));
+			}
+
 		}
 	}
 }
