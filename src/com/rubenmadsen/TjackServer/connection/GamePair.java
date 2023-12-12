@@ -26,7 +26,7 @@ public class GamePair {
     public boolean isFull(){
         return this.players.size() == 2;
     }
-    public void addPlayer(Socket socket, String name) throws IOException {
+    public void addPlayer(Socket socket, String name) throws IOException, InterruptedException {
         this.players.add(socket);
         this.playerNames.add(name);
         ClientConnection.receive(socket, AChessPacket.class).subscribeOn(Schedulers.io()).subscribe(data -> {
@@ -41,6 +41,7 @@ public class GamePair {
         if(this.players.size() == 2){
             StartPacket startPacket = new StartPacket(this.playerNames.get(0),this.playerNames.get(1));
             startPacket.id = this.identifier;
+            //Thread.currentThread().wait(1000);
             this.distributeTo(null,startPacket);
         }
     }

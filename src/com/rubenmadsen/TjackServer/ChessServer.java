@@ -37,6 +37,13 @@ public class ChessServer extends Thread{
             System.out.println(gamePair.toString());
         }
     }
+    public void printAllGames(){
+        for (String id : this.games.keySet()){
+            GamePair gamePair = this.games.get(id);
+            System.out.println("Game:" + id);
+            System.out.println("\t" + gamePair.toString() + "\n");
+        }
+    }
     public void tellAll(String message){
         this.games.values().stream().forEach(game -> {
             InfoPacket infoPacket = new InfoPacket(message);
@@ -54,24 +61,24 @@ public class ChessServer extends Thread{
                 Disposable disposable = ClientConnectionObservable.firstElement().subscribeOn(Schedulers.io()).subscribe(packet -> {
                     // Packets
                     if (packet instanceof HostPacket hostPacket) {
-                        String id = Generate.generateId(8);
+                        String id = Generate.generateId(4);
                         GamePair gamePair = new GamePair(id);
                         this.games.put(id, gamePair);
                         gamePair.addPlayer(client,hostPacket.playerName);
                         JoinedPacket response = new JoinedPacket(hostPacket.playerName);
-                        response.id = "dolk";//id;
+                        response.id = id;
                         ClientConnection.send(client, response);
                         //gamePair.distributeTo(null,response);
                         System.out.println("This guy connected:" + hostPacket.playerName);
                     }
                     else if (packet instanceof JoinPacket joinPacket){
-                        GamePair gamePair = this.games.get("dolk");
+                        GamePair gamePair = this.games.get(joinPacket.id);
                         if (!gamePair.isFull()){
                             gamePair.addPlayer(client, joinPacket.playerName);
                             JoinedPacket response = new JoinedPacket(joinPacket.playerName);
                             //gamePair.distributeTo(client,response);
                             ClientConnection.send(client, response);
-                            System.out.println("This second guy:" + joinPacket.playerName + " connected to:" + joinPacket.identifier);
+                            System.out.println("This second guy:" + joinPacket.playerName + " connected to:" + joinPacket.id);
                         }
                     }
 

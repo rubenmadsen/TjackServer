@@ -18,11 +18,16 @@ public class AppStart {
 		String read = "";
 		while (!read.equals("exit")){
 			read = scanner.nextLine();
-			if (read.startsWith("tell ")){
-				//chessServer.printGame(read);
-				chessServer.tellAll(read.substring(5));
+			String cmd = read.split(" ")[0];
+			String arg = read.substring(cmd.length() );
+			switch (cmd){
+				case "tell" -> {
+					chessServer.tellAll(arg);
+				}
+				case "game" -> {
+					chessServer.printAllGames();
+				}
 			}
-
 		}
 	}
 }
