@@ -45,7 +45,7 @@ public class ClientConnection {
                         emitter.onNext((T)packet);
                     }
                 }
-            emitter.onError(new Throwable("Socket knas"));
+            emitter.onError(null);//new Throwable("Socket knas")
         });
     }
 
@@ -54,9 +54,9 @@ public class ClientConnection {
         Gson gson = new Gson();
 
         String data = gson.toJson(packet);
-
+        gson.serializeNulls();
         byte[] bytes = data.getBytes(StandardCharsets.UTF_8);
-        System.out.println("Outgoing data:" + data);
+        System.out.println("Outgoing data [" + bytes.length + "]:" + data);
         System.out.println("bytes: [" + Arrays.toString(bytes) + "]");
         client.getOutputStream().write(bytes);
 

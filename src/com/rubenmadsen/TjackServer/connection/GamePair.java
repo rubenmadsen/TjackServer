@@ -27,6 +27,7 @@ public class GamePair {
             //this.distributeTo(socket, data);
         },throwable -> {
             System.out.println("Client fucked off");
+            this.players.remove(socket);
         }, () ->{
             System.out.println("Client on complete");
         });
