@@ -29,8 +29,10 @@ public class GamePair {
     public void addPlayer(Socket socket, String name) throws IOException, InterruptedException {
         this.players.add(socket);
         this.playerNames.add(name);
-        ClientConnection.receive(socket, AChessPacket.class).subscribeOn(Schedulers.io()).subscribe(data -> {
+        ClientConnection.receive(socket, AChessPacket.class).subscribeOn(Schedulers.computation()).subscribe(data -> {
             //this.distributeTo(socket, data);
+
+            distributeTo(socket, data);
         },throwable -> {
             System.out.println("Client fucked off");
             this.players.remove(socket);
@@ -46,8 +48,10 @@ public class GamePair {
         }
     }
     public <T extends AChessPacket> void distributeTo(Socket sender, T packet){
+        System.out.println("Player count "+this.players.stream().count());
         this.players.stream().filter(socket -> socket != sender).forEach(socket -> {
             try {
+                System.out.println("Send in filter");
                 ClientConnection.send(socket, packet);
             } catch (IOException e) {
                 throw new RuntimeException(e);

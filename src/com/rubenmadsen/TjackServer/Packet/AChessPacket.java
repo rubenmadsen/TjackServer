@@ -7,7 +7,6 @@ import java.io.Serializable;
 public abstract class AChessPacket implements Serializable {
     public String type = this.getClass().getSimpleName();;
     public String id;
-    public String placeHolder = "Bajskorv";
     public String encodeJson(){
         Gson gson = new Gson();
         return gson.toJson(this);

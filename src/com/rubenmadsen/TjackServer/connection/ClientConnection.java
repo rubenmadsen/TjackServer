@@ -35,17 +35,13 @@ public class ClientConnection {
 
                         Object packet = gson.fromJson(jsonString, packetClass);
 
-                        /*if (obj instanceof Person) {
-                            Person person = (Person) obj;
-                            // Use the person object
-                        }*/
-                        System.out.println("Bytes read:" + bytesRead);
+                        //System.out.println("Bytes read:" + bytesRead);
                         System.out.println("Client Connection str:" + jsonString);
                         //ChessPacket packet = ChessPacket.decodeJson(jsonString);
                         emitter.onNext((T)packet);
                     }
                 }
-            emitter.onError(null);//new Throwable("Socket knas")
+            emitter.onError(new Throwable("Socket knas"));
         });
     }
 
@@ -57,12 +53,11 @@ public class ClientConnection {
         gson.serializeNulls();
         byte[] bytes = data.getBytes(StandardCharsets.UTF_8);
         System.out.println("Outgoing data [" + bytes.length + "]:" + data);
-        System.out.println("bytes: [" + Arrays.toString(bytes) + "]");
+        //System.out.println("bytes: [" + Arrays.toString(bytes) + "]");
+        System.out.println("Client send out is shutdown:" + client.isOutputShutdown());
         client.getOutputStream().write(bytes);
-
+        client.getOutputStream().flush();
     }
-
-
 }
 /*
 // write

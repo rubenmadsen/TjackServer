@@ -74,11 +74,12 @@ public class ChessServer extends Thread{
                     else if (packet instanceof JoinPacket joinPacket){
                         GamePair gamePair = this.games.get(joinPacket.id);
                         if (!gamePair.isFull()){
-                            gamePair.addPlayer(client, joinPacket.playerName);
                             JoinedPacket response = new JoinedPacket(joinPacket.playerName);
-                            //gamePair.distributeTo(client,response);
                             ClientConnection.send(client, response);
+                            //gamePair.distributeTo(client,response);
                             System.out.println("This second guy:" + joinPacket.playerName + " connected to:" + joinPacket.id);
+                            Thread.sleep(200);
+                            gamePair.addPlayer(client, joinPacket.playerName);
                         }
                     }
 
