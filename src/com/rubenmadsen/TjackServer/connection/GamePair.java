@@ -31,8 +31,9 @@ public class GamePair {
         this.playerNames.add(name);
         ClientConnection.receive(socket, AChessPacket.class).subscribeOn(Schedulers.computation()).subscribe(data -> {
             //this.distributeTo(socket, data);
-
+            System.out.println("Observable data:");
             distributeTo(socket, data);
+            System.out.println();
         },throwable -> {
             System.out.println("Client fucked off");
             this.players.remove(socket);

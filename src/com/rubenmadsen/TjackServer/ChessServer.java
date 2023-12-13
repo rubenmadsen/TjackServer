@@ -46,8 +46,8 @@ public class ChessServer extends Thread{
     }
     public void tellAll(String message){
         this.games.values().stream().forEach(game -> {
-            InfoPacket infoPacket = new InfoPacket(message);
-            game.distributeTo(null, infoPacket);
+            ChatMessagePacket chatMessagePacket = new ChatMessagePacket(message);
+            game.distributeTo(null, chatMessagePacket);
         });
     }
     public void setup(){
@@ -56,7 +56,6 @@ public class ChessServer extends Thread{
         serverObservable.subscribeOn(Schedulers.io())
             // Subscribe to greeting
             .subscribe(client -> {
-
                 Observable<? extends AChessPacket> ClientConnectionObservable = ClientConnection.receive(client,AChessPacket.class);
                 Disposable disposable = ClientConnectionObservable.firstElement().subscribeOn(Schedulers.io()).subscribe(packet -> {
                     // Packets
@@ -69,15 +68,14 @@ public class ChessServer extends Thread{
                         response.id = id;
                         ClientConnection.send(client, response);
                         //gamePair.distributeTo(null,response);
-                        System.out.println("This guy connected:" + hostPacket.playerName);
+                        System.out.println("Player 1 '" + hostPacket.playerName + "' connect");
                     }
                     else if (packet instanceof JoinPacket joinPacket){
                         GamePair gamePair = this.games.get(joinPacket.id);
                         if (!gamePair.isFull()){
                             JoinedPacket response = new JoinedPacket(joinPacket.playerName);
                             ClientConnection.send(client, response);
-                            //gamePair.distributeTo(client,response);
-                            System.out.println("This second guy:" + joinPacket.playerName + " connected to:" + joinPacket.id);
+                            System.out.println("Player 1 '" + joinPacket.playerName + "' joined '" + joinPacket.id + "'");
                             Thread.sleep(200);
                             gamePair.addPlayer(client, joinPacket.playerName);
                         }

@@ -17,12 +17,12 @@ import java.util.Arrays;
 public class ClientConnection {
 
 
-    static public <T extends AChessPacket> Observable<T> receive(Socket client, Class<T> packetClass) throws IOException {
-        OutputStream os = client.getOutputStream();
-        InputStream is = client.getInputStream();
+    synchronized static public <T extends AChessPacket> Observable<T> receive(Socket client, Class<T> packetClass) throws IOException {
+        //OutputStream os = client.getOutputStream();
+        //InputStream is = client.getInputStream();
         return Observable.create(emitter -> {
-            BufferedInputStream bis = new BufferedInputStream(is);
-                System.out.println("Connected to server");
+            BufferedInputStream bis = new BufferedInputStream(client.getInputStream());
+                //System.out.println("Connected to server");
                 while (!emitter.isDisposed() && !client.isClosed()) {
                     byte[] buffer = new byte[1024];
                     int bytesRead;
@@ -36,10 +36,15 @@ public class ClientConnection {
                         Object packet = gson.fromJson(jsonString, packetClass);
 
                         //System.out.println("Bytes read:" + bytesRead);
-                        System.out.println("Client Connection str:" + jsonString);
+                        //System.out.println("Client Connection str:" + jsonString);
                         //ChessPacket packet = ChessPacket.decodeJson(jsonString);
+                        System.out.println("Incoming data [" + bytesRead + "]:" + jsonString);
+
                         emitter.onNext((T)packet);
                     }
+                }
+                if(emitter.isDisposed()){
+                    client.close();
                 }
             emitter.onError(new Throwable("Socket knas"));
         });
@@ -54,25 +59,7 @@ public class ClientConnection {
         byte[] bytes = data.getBytes(StandardCharsets.UTF_8);
         System.out.println("Outgoing data [" + bytes.length + "]:" + data);
         //System.out.println("bytes: [" + Arrays.toString(bytes) + "]");
-        System.out.println("Client send out is shutdown:" + client.isOutputShutdown());
         client.getOutputStream().write(bytes);
         client.getOutputStream().flush();
     }
 }
-/*
-// write
-ObjectMapper mapper = new ObjectMapper();
-        try {
-                String json = mapper.writeValueAsString(packet);
-                System.out.println(json);
-                } catch (Exception e) {
-                e.printStackTrace();
-                }
-// read
-ObjectMapper mapper = new ObjectMapper();
-try {
-        Person person = mapper.readValue(json, Person.class);
-        System.out.println(person.getName()); // prints "John Doe"
-        } catch (Exception e) {
-        e.printStackTrace();
-        }*/
