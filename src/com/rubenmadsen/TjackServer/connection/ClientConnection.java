@@ -61,6 +61,9 @@ public class ClientConnection {
                 byte[] buffer = new byte[1024];
                 int bytesRead;
                 while ((bytesRead = bis.read(buffer)) != -1) {
+                    if (bytesRead == 0){
+                        emitter.onComplete();
+                    }
                     // Process the bytes
                     String jsonString = new String(buffer, 0, bytesRead);
                     Gson gson = new GsonBuilder()
