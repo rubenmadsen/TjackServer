@@ -1,6 +1,6 @@
 package com.rubenmadsen.TjackServer.Packet;
 
-public class StartPacket extends AChessPacket{
+public class StartPacket extends ChessPacket{
     public String player1;
     public String player2;
 

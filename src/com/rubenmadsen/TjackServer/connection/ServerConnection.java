@@ -1,5 +1,6 @@
 package com.rubenmadsen.TjackServer.connection;
 
+import com.rubenmadsen.TjackServer.Packet.ChessPacket;
 import io.reactivex.rxjava3.core.Observable;
 
 import java.io.IOException;
@@ -11,8 +12,8 @@ import java.util.Hashtable;
 import java.util.List;
 
 public class ServerConnection extends Thread{
-    List<Socket> clients = new ArrayList<>();
-    public Observable<Socket> createSocketObservable(int port) {
+    List<ClientConnection> clients = new ArrayList<>();
+    public Observable<ClientConnection> createSocketObservable(int port) {
         return Observable.create(emitter -> {
             try (ServerSocket serverSocket = new ServerSocket(port)) {
                 while (!emitter.isDisposed() && !serverSocket.isClosed()) {
@@ -21,7 +22,10 @@ public class ServerConnection extends Thread{
                     Socket socket = serverSocket.accept();
                     System.out.println("Client trying to connect");
                     // Emit the socket to subscribers.
-                    emitter.onNext(socket);
+                    ClientConnection clientConnection = new ClientConnection();
+                    clientConnection.setSocket(socket);
+                    this.clients.add(clientConnection);
+                    emitter.onNext(clientConnection);
                 }
             } catch (IOException e) {
                 emitter.onError(e);
@@ -29,12 +33,12 @@ public class ServerConnection extends Thread{
         });
     }
 
-    public void removeClient(Socket client){
-        this.clients.remove(client);
+    public void removeClient(ClientConnection clientConnection){
+        this.clients.remove(clientConnection);
         System.out.println("Client connection removed");
     }
 
-    /*public void distribute(ClientConnection sender, String packet, boolean includeSender) throws IOException {
+    public <T extends ChessPacket> void distribute(ClientConnection sender, T packet, boolean includeSender) throws IOException {
         this.clients.stream().filter(clientConnection -> clientConnection != sender).forEach(clientConnection -> {
             try {
                 clientConnection.send(packet);
@@ -50,5 +54,5 @@ public class ServerConnection extends Thread{
                     e.printStackTrace();
                 }
             });
-    }*/
+    }
 }

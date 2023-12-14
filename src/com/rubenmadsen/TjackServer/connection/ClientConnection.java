@@ -15,49 +15,72 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class ClientConnection {
+    private String handle;
+    private Socket socket;
+    private OutputStream os;
+    private InputStream is;
+    private BufferedInputStream bis;
+    private BufferedOutputStream bos;
+    public Socket getSocket(){
+        return this.socket;
+    }
+    public void setSocket(Socket socket) throws IOException {
+        this.socket = socket;
+        this.setupSocket();
+    }
+    public String getHandle() {
+        return handle;
+    }
 
+    public void setHandle(String handle) {
+        this.handle = handle;
+    }
+    public boolean openSocket(String address, int port) {
+        try {
+            this.socket = new Socket(address, port);
+            this.setupSocket();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
-    static public <T extends AChessPacket> Observable<T> receive(Socket client, Class<T> packetClass) throws IOException {
-        //OutputStream os = client.getOutputStream();
-        //InputStream is = client.getInputStream();
+    private void setupSocket() throws IOException {
+        this.os = this.socket.getOutputStream();
+        this.is = this.socket.getInputStream();
+        this.bos = new BufferedOutputStream(this.os);
+        this.bis = new BufferedInputStream(this.is);
+    }
+
+    public Observable<ChessPacket> receive() {
         return Observable.create(emitter -> {
-            BufferedInputStream bis = new BufferedInputStream(client.getInputStream());
-                //System.out.println("Connected to server");
-                while (!emitter.isDisposed() && !client.isClosed()) {
-                    byte[] buffer = new byte[1024];
-                    int bytesRead;
-                    while ((bytesRead = bis.read(buffer)) != -1) {
-                        // Process the bytes
-                        String jsonString = new String(buffer, 0, bytesRead);
-                        Gson gson = new GsonBuilder()
-                                .registerTypeAdapter(AChessPacket.class, new CustomDeserializer())
-                                .create();
+            System.out.println("Connected to server");
+            while (!emitter.isDisposed() && !socket.isClosed()) {
+                // Accept new client connections.
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = bis.read(buffer)) != -1) {
+                    // Process the bytes
+                    String jsonString = new String(buffer, 0, bytesRead);
+                    Gson gson = new GsonBuilder()
+                            .registerTypeAdapter(ChessPacket.class, new CustomDeserializer())
+                            .create();
 
-                        Object packet = gson.fromJson(jsonString, packetClass);
-                        //System.out.println("Bytes read:" + bytesRead);
-                        //System.out.println("Client Connection str:" + jsonString);
-                        //ChessPacket packet = ChessPacket.decodeJson(jsonString);
-                        System.out.println("Incoming data [" + bytesRead + "]:" + jsonString);
-                        emitter.onNext((T)packet);
-                    }
+                    Object packet = gson.fromJson(jsonString, ChessPacket.class);
+                    System.out.println("Incoming data [" + bytesRead + "]:" + jsonString);
+                    emitter.onNext((ChessPacket) packet);
                 }
-                if(emitter.isDisposed()){
-                    client.close();
-                }
-            //emitter.onError(new Throwable("Socket knas"));
+            }
+            emitter.onError(new Throwable("Socket knas"));
         });
     }
 
-    static public <T extends AChessPacket> void send(Socket client, T packet) throws IOException {
-        // Encode Json
+    public <T extends AChessPacket> void send(T packet) throws IOException {
         Gson gson = new Gson();
-
-        String data = gson.toJson(packet);
+        String jsonString = gson.toJson(packet);
         gson.serializeNulls();
-        byte[] bytes = data.getBytes(StandardCharsets.UTF_8);
-        System.out.println("Outgoing data [" + bytes.length + "]:" + data);
-        //System.out.println("bytes: [" + Arrays.toString(bytes) + "]");
-        client.getOutputStream().write(bytes);
-        client.getOutputStream().flush();
+        System.out.println("Outgoing data [" + jsonString.length() + "]:" + jsonString);
+        this.os.write(jsonString.getBytes(StandardCharsets.UTF_8));
     }
 }

@@ -2,7 +2,7 @@ package com.rubenmadsen.TjackServer.Packet;
 
 import java.awt.*;
 
-public class MovePacket extends AChessPacket{
+public class MovePacket extends ChessPacket{
     public Point to;
     public Point from;
 
