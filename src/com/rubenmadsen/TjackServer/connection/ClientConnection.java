@@ -17,7 +17,7 @@ import java.util.Arrays;
 public class ClientConnection {
 
 
-    synchronized static public <T extends AChessPacket> Observable<T> receive(Socket client, Class<T> packetClass) throws IOException {
+    static public <T extends AChessPacket> Observable<T> receive(Socket client, Class<T> packetClass) throws IOException {
         //OutputStream os = client.getOutputStream();
         //InputStream is = client.getInputStream();
         return Observable.create(emitter -> {
@@ -34,19 +34,17 @@ public class ClientConnection {
                                 .create();
 
                         Object packet = gson.fromJson(jsonString, packetClass);
-
                         //System.out.println("Bytes read:" + bytesRead);
                         //System.out.println("Client Connection str:" + jsonString);
                         //ChessPacket packet = ChessPacket.decodeJson(jsonString);
                         System.out.println("Incoming data [" + bytesRead + "]:" + jsonString);
-
                         emitter.onNext((T)packet);
                     }
                 }
                 if(emitter.isDisposed()){
                     client.close();
                 }
-            emitter.onError(new Throwable("Socket knas"));
+            //emitter.onError(new Throwable("Socket knas"));
         });
     }
 

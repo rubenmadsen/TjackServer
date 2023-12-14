@@ -50,7 +50,7 @@ public class GamePair {
     }
     public <T extends AChessPacket> void distributeTo(Socket sender, T packet){
         System.out.println("Player count "+this.players.stream().count());
-        this.players.stream().filter(socket -> socket != sender).forEach(socket -> {
+        this.players.stream().forEach(socket -> {
             try {
                 System.out.println("Send in filter");
                 ClientConnection.send(socket, packet);
