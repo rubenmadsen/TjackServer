@@ -53,7 +53,7 @@ public class ChessServer extends Thread {
 
     public void tellAll(String message) {
         this.games.values().stream().forEach(game -> {
-            ChatMessagePacket chatMessagePacket = new ChatMessagePacket(message);
+            ChatMessagePacket chatMessagePacket = new ChatMessagePacket("Server", message);
             for (GamePair gp : this.games.values()) {
                 for (ClientConnection cc : gp.players) {
                     try {
@@ -85,7 +85,7 @@ public class ChessServer extends Thread {
                     GamePair gamePair = new GamePair(id);
                     this.games.put(id, gamePair);
                     gamePair.addPlayer(clientConnection, hostPacket.playerName);
-                    JoinedPacket response = new JoinedPacket(hostPacket.playerName);
+                    JoinedPacket response = new JoinedPacket(hostPacket.playerName,gamePair.players.size());
                     response.id = id;
                     clientConnection.send(response);
                     //gamePair.distributeTo(null,response);
@@ -94,7 +94,7 @@ public class ChessServer extends Thread {
                     clientConnection.setHandle(joinPacket.playerName);
                     GamePair gamePair = this.games.get(joinPacket.id);
                     if (!gamePair.isFull()) {
-                        JoinedPacket response = new JoinedPacket(joinPacket.playerName);
+                        JoinedPacket response = new JoinedPacket(joinPacket.playerName,gamePair.players.size());
                         clientConnection.send(response);
                         System.out.println("Player 1 '" + joinPacket.playerName + "' joined '" + joinPacket.id + "'");
                         gamePair.addPlayer(clientConnection, joinPacket.playerName);

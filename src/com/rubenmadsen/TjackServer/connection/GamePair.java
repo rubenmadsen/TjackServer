@@ -19,10 +19,14 @@ public class GamePair {
         this.id = id;
     }
     public void addPlayer(ClientConnection clientConnection, String playerName){
+        clientConnection.setGamePair(this);
         this.players.add(clientConnection);
     }
     public boolean isFull(){
         return this.players.size() == 2;
+    }
+    public void removePlayer(ClientConnection clientConnection){
+        this.players.remove(clientConnection);
     }
     @Override
     public String toString(){
