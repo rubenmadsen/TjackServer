@@ -16,10 +16,10 @@ import java.util.Hashtable;
 import java.util.Map;
 
 public class ChessServer extends Thread {
-    private int port;
+    private final int port;
     ServerConnection serverConnection;
     ClientConnection clientConnection;
-    private Map<String, GamePair> games = new Hashtable<>();
+    private final Map<String, GamePair> games = new Hashtable<>();
 
     public ChessServer(int port) {
         this.port = port;
@@ -80,7 +80,7 @@ public class ChessServer extends Thread {
                     clientConnection.setHandle(hostPacket.playerName);
                     String id = Generate.generateId(4);
                     while (this.games.keySet().contains(id)) {
-                        id = Generate.generateId(4);
+                        id = Generate.generateId(6);
                     }
                     GamePair gamePair = new GamePair(id);
                     this.games.put(id, gamePair);

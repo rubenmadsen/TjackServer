@@ -10,11 +10,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class GamePair {
     public List<ClientConnection> players = new ArrayList<>();
     String id;
+    Date lastInteraction = new Date();
     public GamePair(String id){
         this.id = id;
     }
@@ -36,5 +38,9 @@ public class GamePair {
             mess.append("\n");
         }
         return mess.toString();
+    }
+
+    public void interact(){
+        this.lastInteraction = new Date();
     }
 }
